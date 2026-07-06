@@ -1,0 +1,804 @@
+
+# Overall Project Architecture
+
+I would split the project into three major modules instead of two.
+
+```
+                ┌───────────────────────────┐
+                │ Website Knowledge Engine  │
+                │  (Crawler)                │
+                └────────────┬──────────────┘
+                             │
+                 Creates Website Knowledge
+                             │
+         graph.json
+         flows.json
+         sqlite.db
+         embeddings
+         screenshots
+                             │
+                             ▼
+                ┌───────────────────────────┐
+                │ Knowledge Index           │
+                │ Retrieval Layer           │
+                └────────────┬──────────────┘
+                             │
+                      User Prompt
+                             │
+                             ▼
+                ┌───────────────────────────┐
+                │ LLM Browser Agent         │
+                │ (Playwright)              │
+                └───────────────────────────┘
+```
+
+The crawler never automates user requests.
+
+It only learns the website.
+
+The LLM only performs tasks.
+
+---
+
+# Why Playwright?
+
+I recommend **Playwright**.
+
+Reasons:
+
+✓ Chromium
+
+✓ Chrome
+
+✓ Edge
+
+✓ Firefox
+
+✓ Works locally
+
+✓ Stable
+
+✓ Supports downloads
+
+✓ Handles iframes
+
+✓ Supports Shadow DOM
+
+✓ Network interception
+
+✓ Storage state
+
+✓ Multiple tabs
+
+✓ File upload
+
+✓ Good Python support
+
+Nearly every modern browser agent eventually uses Playwright underneath.
+
+---
+
+# High-Level Architecture
+
+Instead of one crawler, I would build about **15 independent modules**.
+
+```
+crawler/
+
+    browser/
+
+    explorer/
+
+    extractor/
+
+    workflow/
+
+    storage/
+
+    vision/
+
+    llm/
+
+    network/
+
+    auth/
+
+    forms/
+
+    graph/
+
+    embeddings/
+
+    duplicate_detection/
+
+    scheduler/
+```
+
+Each module has only one responsibility.
+
+---
+
+# Stage 1 — Browser Controller
+
+Responsibilities
+
+* Launch Chrome
+
+* Restore session
+
+* Login
+
+* Save cookies
+
+* Handle popups
+
+* Downloads
+
+* Uploads
+
+* Multiple tabs
+
+* Dialogs
+
+* New windows
+
+* Timeouts
+
+This module should never understand webpages.
+
+It only controls browsers.
+
+---
+
+# Stage 2 — DOM Extractor
+
+This becomes one of the biggest modules.
+
+For every page it extracts
+
+```
+URL
+
+Title
+
+Breadcrumbs
+
+Headings
+
+Menus
+
+Forms
+
+Buttons
+
+Tables
+
+Links
+
+Cards
+
+Modals
+
+Accordions
+
+Tabs
+
+Trees
+
+Breadcrumbs
+
+ARIA tree
+
+Accessibility labels
+
+Element hierarchy
+
+DOM structure
+```
+
+This becomes
+
+```
+pages.json
+```
+
+---
+
+# Stage 3 — UI Component Detector
+
+Instead of saving HTML,
+
+convert HTML into semantic components.
+
+Example
+
+Instead of
+
+```
+<button class="btn btn-primary">
+```
+
+store
+
+```
+{
+    type:"button",
+
+    label:"Change Password",
+
+    role:"submit",
+
+    location:"profile/security",
+
+    xpath:"...",
+
+    css:"..."
+}
+```
+
+The LLM never needs HTML.
+
+It needs UI meaning.
+
+---
+
+# Stage 4 — Navigation Explorer
+
+This is where the intelligence begins.
+
+Instead of
+
+```
+Click every button.
+```
+
+it performs
+
+```
+Observe
+
+↓
+
+Think
+
+↓
+
+Predict
+
+↓
+
+Click
+
+↓
+
+Observe
+
+↓
+
+Repeat
+```
+
+Each page becomes a graph node.
+
+Every interaction becomes an edge.
+
+```
+Home
+
+↓
+
+Login
+
+↓
+
+Dashboard
+
+↓
+
+Profile
+
+↓
+
+Security
+
+↓
+
+Password
+
+↓
+
+Save
+```
+
+---
+
+# Stage 5 — State Machine
+
+Every website is actually a state machine.
+
+Instead of pages
+
+think
+
+```
+Logged Out
+
+↓
+
+Login Form
+
+↓
+
+Dashboard
+
+↓
+
+Modal Open
+
+↓
+
+Dropdown Expanded
+
+↓
+
+Password Form
+```
+
+These are all different states.
+
+The crawler stores
+
+```
+State A
+
+↓
+
+Action
+
+↓
+
+State B
+```
+
+This becomes
+
+```
+graph.json
+```
+
+---
+
+# Stage 6 — Workflow Builder
+
+This is the most important module.
+
+Instead of storing pages
+
+store workflows.
+
+Example
+
+```
+Workflow
+
+Change Password
+
+Start
+
+↓
+
+Dashboard
+
+↓
+
+Profile
+
+↓
+
+Security
+
+↓
+
+Password
+
+↓
+
+Old Password
+
+↓
+
+New Password
+
+↓
+
+Confirm
+
+↓
+
+Save
+
+↓
+
+Success
+```
+
+Later,
+
+the LLM simply retrieves
+
+```
+Workflow:
+Change Password
+```
+
+instead of rediscovering the website.
+
+---
+
+# Stage 7 — Duplicate Detection
+
+One of the hardest problems.
+
+Example
+
+```
+Playlist 1
+
+Playlist 2
+
+Playlist 3
+
+Playlist 4
+```
+
+These should NOT become
+
+```
+4 workflows
+```
+
+Instead
+
+```
+Playlist Detail Page
+
+Parameter
+
+playlist_id
+```
+
+The crawler needs template detection.
+
+It compares
+
+* DOM
+
+* Layout
+
+* XPath
+
+* URL
+
+* Visual similarity
+
+* LLM similarity
+
+Then clusters pages.
+
+Instead of
+
+```
+/playlist/123
+
+/playlist/456
+
+/playlist/789
+```
+
+store
+
+```
+/playlist/{id}
+```
+
+Exactly like routing frameworks.
+
+This saves thousands of nodes.
+
+---
+
+# Stage 8 — Forms
+
+One of the most important modules.
+
+Every form becomes
+
+```
+Form
+
+↓
+
+Fields
+
+↓
+
+Validation
+
+↓
+
+Buttons
+
+↓
+
+Dependencies
+```
+
+Example
+
+```
+Application Number
+
+required
+
+numeric
+
+max 20
+```
+
+instead of
+
+```
+<input id=xyz>
+```
+
+The LLM understands forms.
+
+---
+
+# Stage 9 — LLM Reasoner
+
+The crawler itself uses an LLM.
+
+Example
+
+Page discovered
+
+LLM answers
+
+```
+What is this page?
+
+Settings
+
+Payments
+
+Profile
+
+License
+
+Registration
+
+Certificate
+
+Dashboard
+
+Unknown
+```
+
+Then
+
+```
+What can the user do here?
+```
+
+Outputs
+
+```
+Apply License
+
+Renew License
+
+Print Certificate
+
+Track Status
+```
+
+Store these.
+
+---
+
+# Stage 10 — Vision Backup
+
+Only if DOM exploration fails.
+
+Flow
+
+```
+Screenshot
+
+↓
+
+Vision LLM
+
+↓
+
+"There is a collapsed sidebar."
+
+↓
+
+Open Sidebar
+
+↓
+
+Continue crawling
+```
+
+This should only happen about 1–5% of the time.
+
+---
+
+# Stage 11 — Embedding Engine
+
+Every page gets embedded.
+
+```
+Dashboard
+
+↓
+
+vector
+```
+
+Workflow
+
+↓
+
+vector
+
+Form
+
+↓
+
+vector
+
+Menu
+
+↓
+
+vector
+
+Now the LLM can retrieve
+
+```
+"renew food license"
+```
+
+without exact wording.
+
+---
+
+# Stage 12 — Storage
+
+I recommend:
+
+```
+crawl/
+
+    pages.json
+
+    graph.json
+
+    workflows.json
+
+    forms.json
+
+    components.json
+
+    screenshots/
+
+    embeddings/
+
+    sqlite.db
+
+    crawl.log
+
+    errors.log
+```
+
+SQLite becomes the master database.
+
+JSON files are exports.
+
+---
+
+# Stage 13 — Weekly Updates
+
+Rather than recrawling everything, implement an incremental crawl:
+
+1. Load the previous graph and known templates.
+2. Start from the homepage and authenticated dashboard.
+3. Detect changed pages using DOM hashes and visual hashes.
+4. Re-crawl only changed branches and newly discovered paths.
+5. Update embeddings only for modified content.
+6. Merge changes into the existing graph while preserving stable node IDs.
+
+This will reduce crawl time dramatically once the initial knowledge base has been built.
+
+---
+
+# Technology Stack
+
+| Module             | Technology                                                         |
+| ------------------ | ------------------------------------------------------------------ |
+| Browser Automation | Playwright                                                         |
+| HTML Parsing       | BeautifulSoup + lxml                                               |
+| DOM Inspection     | Playwright DOM API                                                 |
+| Workflow Graph     | NetworkX                                                           |
+| Database           | SQLite                                                             |
+| Vector Search      | FAISS                                                              |
+| Embeddings         | OpenAI or local sentence-transformer model                         |
+| Vision Fallback    | GPT-4.1 Vision / GPT-5 Vision (or another compatible vision model) |
+| LLM Planning       | LangGraph                                                          |
+| Orchestration      | Python asyncio                                                     |
+| Logging            | structlog                                                          |
+| Configuration      | YAML                                                               |
+| Screenshots        | Playwright                                                         |
+
+---
+
+# One Additional Capability I'd Add
+
+The feature I believe will make this system significantly more reliable is **Action Contracts**.
+
+Instead of recording only:
+
+```
+Click Settings
+
+↓
+
+Click Profile
+
+↓
+
+Click Change Password
+```
+
+store a contract for every action:
+
+```json
+{
+  "action": "Open Change Password",
+  "preconditions": [
+    "User is logged in",
+    "Profile menu is visible"
+  ],
+  "target_state": "Change Password Form",
+  "success_indicators": [
+    "Old Password field visible",
+    "New Password field visible",
+    "Save button enabled"
+  ],
+  "failure_indicators": [
+    "Access Denied",
+    "Session Expired"
+  ],
+  "recovery_actions": [
+    "Re-login",
+    "Navigate back to Dashboard"
+  ]
+}
+```
+
+This is extremely valuable because websites evolve. If a menu moves or a layout changes, the LLM doesn't blindly replay clicks; it verifies whether the expected state has been reached and can recover when it hasn't. That makes the agent far more robust than a simple recorded macro.
+
+## My recommendation for implementation
+
+I would build this in four phases:
+
+1. **Core crawler:** Browser control, DOM extraction, graph building, duplicate detection, and storage.
+2. **Semantic layer:** Workflow extraction, form understanding, embeddings, and LLM-guided exploration.
+3. **Execution layer:** The LangGraph-based Playwright agent that retrieves workflows and performs user-requested tasks with state validation.
+4. **Advanced capabilities:** Incremental crawling, vision fallback, network analysis, API discovery, distributed crawling, and self-healing when the UI changes.
+
+I believe this architecture can scale beyond FOSCOS to many government portals and enterprise web applications while keeping the execution agent simple: it reasons over a structured knowledge base instead of rediscovering each website from scratch every time.
