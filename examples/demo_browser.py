@@ -24,7 +24,7 @@ async def main():
         page_manager = await manager.new_page(context)
 
         # Navigate
-        await page_manager.navigate("https://example.com")
+        await page_manager.navigate("https://fctest.fssai.gov.in/")
 
         # Wait for page to be ready
         await page_manager.wait_for_load_state()

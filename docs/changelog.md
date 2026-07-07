@@ -16,6 +16,15 @@ All notable changes to this project will be documented in this file.
 - Added `crawler/extractor/dom_extractor.py` which injects a Javascript payload for high-performance DOM traversal and bounding box calculation.
 - Wrote unit tests for `HTMLParser` and `DOMExtractor`.
 - Created `examples/demo_extractor.py` to demonstrate DOM extraction saving to `pages.json`.
+- Added `crawler/explorer/models.py` defining structured `StateNode` and `InteractionEdge` dataclasses.
+- Added `crawler/explorer/graph_manager.py` using NetworkX to map the crawler's state machine.
+- Added `crawler/explorer/navigator.py` to orchestrate breadth-first DOM extraction and safe link navigation.
+- Wrote unit tests for `GraphManager` and `Navigator`.
+- Created `examples/demo_explorer.py` to demonstrate exploration and graph generation.
+- Added `crawler/workflow/models.py` defining `Workflow` and `WorkflowStep`.
+- Added `crawler/workflow/extractor.py` to heuristically extract task paths from the NetworkX graph.
+- Wrote unit tests for `WorkflowExtractor`.
+- Updated `examples/demo_explorer.py` to output extracted `workflows.json`.
 
 ### Changed
 - Replaced `selenium` with `playwright` in `requirements.txt`.
