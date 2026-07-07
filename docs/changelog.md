@@ -32,6 +32,19 @@ All notable changes to this project will be documented in this file.
 - Integrated `ClusterManager` into `GraphManager` and `Navigator`, fundamentally changing the graph to connect templates instead of raw URLs.
 - Wrote unit tests for duplicate detection logic.
 - Created `examples/demo_duplicate.py` to demonstrate URL normalization and template clustering of product pages.
+- Added `crawler/embeddings/vector_store.py` for FAISS indexing.
+- Added `crawler/embeddings/embedder.py` for semantic inference using `sentence-transformers`.
+- Added `crawler/embeddings/indexer.py` to bridge the crawler and embeddings modules by formatting states, workflows, and forms into descriptive strings.
+- Created `examples/demo_embeddings.py` which successfully finds the "Login" page when searching for "I need to access my account".
+- Added `crawler/vision/screenshotter.py` to manage capturing screenshots via Playwright.
+- Added `crawler/vision/llm_client.py` containing a `MockVisionLLMClient` to simulate Vision LLM advice without requiring API keys.
+- Added `crawler/vision/recovery_agent.py` to orchestrate screenshot capturing and prompting the LLM when the crawler is stuck.
+- Wrote unit tests for the vision recovery logic.
+- Created `examples/demo_vision.py` to demonstrate the Vision Recovery Agent in action.
+- Added `crawler/cache/state_cache.py` to implement incremental crawling by caching DOM hashes.
+- Updated `crawler/explorer/navigator.py` to check the cache before registering states, skipping unchanged pages.
+- Wrote unit tests for incremental cache logic.
+- Created `examples/demo_incremental.py` to demonstrate skipping un-changed DOM structures despite dynamic IDs.
 
 ### Changed
 - Replaced `selenium` with `playwright` in `requirements.txt`.

@@ -5,6 +5,8 @@ from crawler.browser.browser_manager import BrowserManager
 from crawler.extractor.dom_extractor import DOMExtractor
 from crawler.explorer.graph_manager import GraphManager
 from crawler.duplicate_detection.cluster_manager import ClusterManager
+from crawler.duplicate_detection.dom_hasher import DOMHasher
+from crawler.cache.state_cache import StateCache
 
 logger = get_logger(__name__)
 
@@ -12,11 +14,12 @@ logger = get_logger(__name__)
 class Navigator:
     """Orchestrates the crawler's exploration strategy to build a state graph."""
 
-    def __init__(self, browser: BrowserManager, extractor: DOMExtractor, graph: GraphManager = None):
+    def __init__(self, browser: BrowserManager, extractor: DOMExtractor, graph: GraphManager = None, state_cache: StateCache = None):
         self.browser = browser
         self.extractor = extractor
         self.cluster_manager = ClusterManager()
         self.graph = graph or GraphManager(cluster_manager=self.cluster_manager)
+        self.state_cache = state_cache
         self.visited_urls: Set[str] = set()
 
     async def explore(self, start_url: str, max_depth: int = 2):
@@ -80,6 +83,17 @@ class Navigator:
 
             # Extract DOM state
             page_data = await self.extractor.extract(page_manager.page)
+            
+            # Compute DOM hash for incremental caching
+            dom_hash = DOMHasher.compute_structural_hash(page_data)
+            
+            if self.state_cache and not self.state_cache.is_changed(current_url, dom_hash):
+                logger.info(f"Page unchanged (cache hit), skipping processing: {current_url}")
+                continue
+                
+            if self.state_cache:
+                self.state_cache.set_hash(current_url, dom_hash)
+                self.state_cache.save()
 
             # Register state in graph
             current_state_id = self.graph.add_state(page_data)
