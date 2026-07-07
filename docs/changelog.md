@@ -25,6 +25,11 @@ All notable changes to this project will be documented in this file.
 - Added `crawler/workflow/extractor.py` to heuristically extract task paths from the NetworkX graph.
 - Wrote unit tests for `WorkflowExtractor`.
 - Updated `examples/demo_explorer.py` to output extracted `workflows.json`.
+- Updated `crawler/extractor/dom_extractor.py` JS payload to capture `<label>` relationships, input validation rules (`required`, `min`, `max`, `pattern`, `maxlength`), and `<select>` options.
+- Added `crawler/forms/models.py` defining `SemanticForm`, `FormField`, and `FieldValidation` models.
+- Added `crawler/forms/analyzer.py` to enrich raw DOM forms into semantically meaningful forms with intent guessing.
+- Wrote unit tests for `FormAnalyzer`.
+- Created `examples/demo_forms.py` to demonstrate rich form extraction on Wikipedia's login page.
 
 ### Changed
 - Replaced `selenium` with `playwright` in `requirements.txt`.

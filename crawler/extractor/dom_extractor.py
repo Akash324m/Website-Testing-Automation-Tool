@@ -72,19 +72,48 @@ JS_EXTRACTION_SCRIPT = """
         let inputs = [];
         let buttons = [];
         
+        // Helper to find label text for an input
+        function findLabelText(inp) {
+            if (inp.id) {
+                let lbl = document.querySelector(`label[for="${inp.id}"]`);
+                if (lbl) return lbl.innerText.trim();
+            }
+            let parentLbl = inp.closest('label');
+            if (parentLbl) return parentLbl.innerText.trim();
+            return inp.getAttribute('aria-label') || inp.getAttribute('placeholder') || inp.getAttribute('name') || inp.id || '';
+        }
+        
+        // Extract inputs, selects, and textareas
         f.querySelectorAll('input, select, textarea').forEach((inp) => {
             if (isVisible(inp) && inp.type !== 'hidden') {
+                let tagName = inp.tagName.toLowerCase();
+                let attrs = {
+                    type: inp.type || '',
+                    required: inp.hasAttribute('required') ? 'true' : 'false',
+                    min: inp.getAttribute('min') || '',
+                    max: inp.getAttribute('max') || '',
+                    pattern: inp.getAttribute('pattern') || '',
+                    maxlength: inp.getAttribute('maxlength') || ''
+                };
+                
+                // If it's a select, grab the options
+                if (tagName === 'select') {
+                    let options = Array.from(inp.options).map(opt => opt.value + "::" + opt.text);
+                    attrs['options'] = options.join('|');
+                }
+                
                 inputs.push({
-                    type: inp.tagName.toLowerCase(),
-                    label: inp.getAttribute('name') || inp.id || '',
+                    type: tagName,
+                    label: findLabelText(inp),
                     role: 'input',
                     css_selector: getCssSelector(inp),
                     xpath: '',
-                    attributes: {type: inp.type || ''}
+                    attributes: attrs
                 });
             }
         });
         
+        // Extract buttons
         f.querySelectorAll('button, input[type="submit"]').forEach((btn) => {
             if (isVisible(btn)) {
                 buttons.push({

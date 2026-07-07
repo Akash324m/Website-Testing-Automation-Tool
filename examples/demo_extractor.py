@@ -26,7 +26,7 @@ async def main():
         page_manager = await manager.new_page(context)
 
         # Navigate
-        url = "https://fctest.fssai.gov.in/"
+        url = "https://epaas-uat.fssai.gov.in/"
         await page_manager.navigate(url)
 
         # Wait for page to be ready
