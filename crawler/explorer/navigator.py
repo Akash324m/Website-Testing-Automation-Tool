@@ -4,6 +4,7 @@ from shared.logger import get_logger
 from crawler.browser.browser_manager import BrowserManager
 from crawler.extractor.dom_extractor import DOMExtractor
 from crawler.explorer.graph_manager import GraphManager
+from crawler.duplicate_detection.cluster_manager import ClusterManager
 
 logger = get_logger(__name__)
 
@@ -11,12 +12,11 @@ logger = get_logger(__name__)
 class Navigator:
     """Orchestrates the crawler's exploration strategy to build a state graph."""
 
-    def __init__(
-        self, browser: BrowserManager, extractor: DOMExtractor, graph: GraphManager
-    ):
+    def __init__(self, browser: BrowserManager, extractor: DOMExtractor, graph: GraphManager = None):
         self.browser = browser
         self.extractor = extractor
-        self.graph = graph
+        self.cluster_manager = ClusterManager()
+        self.graph = graph or GraphManager(cluster_manager=self.cluster_manager)
         self.visited_urls: Set[str] = set()
 
     async def explore(self, start_url: str, max_depth: int = 2):

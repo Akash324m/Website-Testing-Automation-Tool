@@ -26,10 +26,12 @@ All notable changes to this project will be documented in this file.
 - Wrote unit tests for `WorkflowExtractor`.
 - Updated `examples/demo_explorer.py` to output extracted `workflows.json`.
 - Updated `crawler/extractor/dom_extractor.py` JS payload to capture `<label>` relationships, input validation rules (`required`, `min`, `max`, `pattern`, `maxlength`), and `<select>` options.
-- Added `crawler/forms/models.py` defining `SemanticForm`, `FormField`, and `FieldValidation` models.
-- Added `crawler/forms/analyzer.py` to enrich raw DOM forms into semantically meaningful forms with intent guessing.
-- Wrote unit tests for `FormAnalyzer`.
-- Created `examples/demo_forms.py` to demonstrate rich form extraction on Wikipedia's login page.
+- Added `crawler/duplicate_detection/dom_hasher.py` to compute structural hashes of DOM, stripping dynamic IDs and classes.
+- Added `crawler/duplicate_detection/url_normalizer.py` to identify dynamic path segments in clustered URLs and replace them with `{id}`.
+- Added `crawler/duplicate_detection/cluster_manager.py` to manage `TemplateCluster`s and map page data to template IDs.
+- Integrated `ClusterManager` into `GraphManager` and `Navigator`, fundamentally changing the graph to connect templates instead of raw URLs.
+- Wrote unit tests for duplicate detection logic.
+- Created `examples/demo_duplicate.py` to demonstrate URL normalization and template clustering of product pages.
 
 ### Changed
 - Replaced `selenium` with `playwright` in `requirements.txt`.

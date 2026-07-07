@@ -12,36 +12,39 @@ logger = get_logger(__name__)
 class GraphManager:
     """Manages the website navigation graph as a State Machine using NetworkX."""
 
-    def __init__(self):
+    def __init__(self, cluster_manager=None):
         self.graph = nx.DiGraph()
         self.states: Dict[str, StateNode] = {}
-
-    def _hash_state(self, page_data: PageData) -> str:
-        """
-        Generates a unique hash for a state based on URL and interactive components.
-        This allows detecting if we've returned to a known state even in SPAs.
-        """
-        # We sort components by selector to ensure stable hashing
-        components_str = "".join(sorted([c.css_selector for c in page_data.components]))
-        base_string = f"{page_data.url.split('?')[0]}::{components_str}"
-        return hashlib.md5(base_string.encode('utf-8')).hexdigest()
+        # Avoid circular imports by importing here if needed, or pass from Navigator
+        self.cluster_manager = cluster_manager
 
     def add_state(self, page_data: PageData) -> str:
-        """Adds a state node if it doesn't exist. Returns the state ID."""
-        state_id = self._hash_state(page_data)
+        """Adds a state node if it doesn't exist. Returns the state ID (template ID)."""
+        if self.cluster_manager:
+            state_id = self.cluster_manager.add_page(page_data)
+            url_to_use = self.cluster_manager.clusters_by_id[state_id].normalized_url
+        else:
+            # Fallback for simple tests
+            components_str = "".join(sorted([c.css_selector for c in page_data.components]))
+            base_string = f"{page_data.url.split('?')[0]}::{components_str}"
+            state_id = hashlib.md5(base_string.encode('utf-8')).hexdigest()
+            url_to_use = page_data.url
         
         if state_id not in self.states:
-            logger.info(f"Discovered new state: {state_id} ({page_data.url})")
+            logger.info(f"Discovered new state: {state_id} ({url_to_use})")
             node = StateNode(
                 state_id=state_id,
-                url=page_data.url,
+                url=url_to_use,
                 page_data=page_data,
                 hash_value=state_id
             )
             self.states[state_id] = node
-            self.graph.add_node(state_id, url=page_data.url, title=page_data.title)
+            self.graph.add_node(state_id, url=url_to_use, title=page_data.title)
         else:
             logger.debug(f"State {state_id} already exists.")
+            # Update the graph node with the possibly newly normalized URL
+            if self.cluster_manager:
+                self.graph.nodes[state_id]['url'] = url_to_use
             
         return state_id
 
