@@ -25,7 +25,7 @@ async def main():
         await browser.start()
 
         # We use a very simple site to avoid long crawls in the demo
-        start_url = "https://epaas-uat.fssai.gov.in/"
+        start_url = "https://demoqa.com/"
 
         # Run exploration up to depth 1 to build the initial graph
         await navigator.explore(start_url, max_depth=1)

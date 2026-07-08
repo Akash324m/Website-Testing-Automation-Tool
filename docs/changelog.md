@@ -45,6 +45,11 @@ All notable changes to this project will be documented in this file.
 - Updated `crawler/explorer/navigator.py` to check the cache before registering states, skipping unchanged pages.
 - Wrote unit tests for incremental cache logic.
 - Created `examples/demo_incremental.py` to demonstrate skipping un-changed DOM structures despite dynamic IDs.
+- Added `crawler/agent/graph.py` to construct the LangGraph workflow (`retrieve_target` -> `plan_path` -> `execute_path`).
+- Added `crawler/agent/executor.py` to wrap the LangGraph agent for easy execution of natural language goals.
+- Exposed `get_shortest_path` in `crawler/explorer/graph_manager.py` using `networkx.shortest_path`.
+- Wrote unit tests in `tests/crawler/agent/test_agent.py` to verify the state transitions of the LangGraph execution agent.
+- Created `examples/demo_agent.py` which mocks a knowledge index and successfully executes a multi-step goal ("Download food license").
 
 ### Changed
 - Replaced `selenium` with `playwright` in `requirements.txt`.

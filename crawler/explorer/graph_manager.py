@@ -85,3 +85,35 @@ class GraphManager:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         logger.info(f"Saved graph to {filepath}")
+
+    def load(self, filepath: str):
+        """Loads the graph structure from a JSON file."""
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.graph = nx.node_link_graph(data)
+        logger.info(f"Loaded graph with {self.graph.number_of_nodes()} nodes and {self.graph.number_of_edges()} edges from {filepath}")
+
+    def get_shortest_path(self, source_id: str, target_id: str) -> Optional[list]:
+        """
+        Finds the shortest path between two states in the graph and returns the 
+        sequence of actions required to traverse it.
+        """
+        try:
+            path_nodes = nx.shortest_path(self.graph, source=source_id, target=target_id)
+            actions = []
+            for i in range(len(path_nodes) - 1):
+                u = path_nodes[i]
+                v = path_nodes[i+1]
+                edge_data = self.graph.get_edge_data(u, v)
+                actions.append({
+                    "action_type": edge_data.get("action"),
+                    "selector": edge_data.get("selector"),
+                    "label": edge_data.get("label")
+                })
+            return actions
+        except nx.NetworkXNoPath:
+            logger.error(f"No path found from {source_id} to {target_id}")
+            return None
+        except nx.NodeNotFound as e:
+            logger.error(f"Node not found in graph: {e}")
+            return None

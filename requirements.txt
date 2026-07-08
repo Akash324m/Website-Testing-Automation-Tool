@@ -11,3 +11,6 @@ networkx==3.4.2
 sentence-transformers
 faiss-cpu
 numpy
+langgraph
+langchain
+langchain-core

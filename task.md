@@ -1,0 +1,53 @@
+- `[x]` **Project Setup**
+  - `[x]` Update `requirements.txt` (remove `selenium`, add `playwright`, `structlog`, `pyyaml`).
+  - `[x]` Install dependencies using `pip`.
+  - `[x]` Install Playwright browsers (`playwright install`).
+  - `[x]` Set up structured logging in `shared/logger.py`.
+  - `[x]` Set up configuration loader in `config/crawler.yaml` and `shared/config.py`.
+- `[x]` **Stage 1: Browser Controller Implementation**
+  - `[x]` Create `crawler/browser/exceptions.py`.
+  - `[x]` Create `crawler/browser/browser_manager.py` (lifecycle, context, cookies).
+  - `[x]` Create `crawler/browser/page_manager.py` (dialogs, popups, downloads).
+  - `[x]` Create `crawler/browser/__init__.py`.
+- `[x]` **Stage 2: DOM Extractor Implementation**
+  - `[x]` Add `lxml` to `requirements.txt` and install.
+  - `[x]` Create `crawler/extractor/models.py` for structured DOM data.
+  - `[x]` Create `crawler/extractor/html_parser.py` using BeautifulSoup.
+  - `[x]` Create `crawler/extractor/dom_extractor.py` (JS injection & Playwright interaction).
+  - `[x]` Create `crawler/extractor/__init__.py`.
+- `[x]` **Phase 5: Workflow Extraction Implementation**
+  - `[x]` Create `crawler/workflow/models.py` for Workflow data structures.
+  - `[x]` Create `crawler/workflow/extractor.py` to parse NetworkX paths.
+  - `[x]` Create `crawler/workflow/__init__.py`.
+- `[x]` **Phase 6: Form Understanding Implementation**
+  - `[x]` Update `crawler/extractor/dom_extractor.py` to capture labels and validation attributes.
+  - `[x]` Create `crawler/forms/models.py` for `SemanticForm` and `FormField`.
+  - `[x]` Create `crawler/forms/analyzer.py` to enrich raw forms.
+  - `[x]` Create `crawler/forms/__init__.py`.
+- `[x]` **Phase 7: Duplicate Detection Implementation**
+  - `[x]` Create `crawler/duplicate_detection/dom_hasher.py`.
+  - `[x]` Create `crawler/duplicate_detection/url_normalizer.py`.
+  - `[x]` Create `crawler/duplicate_detection/cluster_manager.py`.
+  - `[x]` Integrate `ClusterManager` into `GraphManager` and `Navigator`.
+- `[x]` **Phase 8: Embeddings & Contextualization Implementation**
+  - `[x]` Add `sentence-transformers`, `faiss-cpu`, and `numpy` to `requirements.txt`.
+  - `[x]` Create `crawler/embeddings/vector_store.py` for FAISS indexing.
+  - `[x]` Create `crawler/embeddings/embedder.py` for model inference.
+  - `[x]` Create `crawler/embeddings/indexer.py` for semantic indexing of crawler data.
+- `[x]` **Phase 9: Vision Fallback Implementation**
+  - `[x]` Create `crawler/vision/screenshotter.py`.
+  - `[x]` Create `crawler/vision/llm_client.py` with mock LLM client.
+  - `[x]` Create `crawler/vision/recovery_agent.py`.
+- `[x]` **Phase 10: Incremental Crawling Implementation**
+  - `[x]` Create `crawler/cache/state_cache.py`.
+  - `[x]` Update `crawler/explorer/navigator.py` to utilize `StateCache` and `DOMHasher`.
+- `[x]` **Phase 11: LangGraph Execution Agent Implementation**
+  - `[x]` Add `langgraph`, `langchain`, `langchain-core` to `requirements.txt`.
+  - `[x]` Create `crawler/agent/graph.py` to define the LangGraph state and nodes.
+  - `[x]` Create `crawler/agent/executor.py` to wrap the agent.
+  - `[x]` Expose `get_shortest_path` in `crawler/explorer/graph_manager.py`.
+- `[x]` **Testing & Finalization**
+  - `[x]` Write unit tests in `tests/crawler/agent/`.
+  - `[x]` Create `examples/demo_agent.py` for manual verification.
+  - `[x]` Update `docs/changelog.md`.
+  - `[x]` Output Phase 11 completion report.
