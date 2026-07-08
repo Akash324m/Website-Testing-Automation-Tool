@@ -26,3 +26,9 @@ class PageManager:
 
     async def take_screenshot(self, path: str):
         await self.page.screenshot(path=path)
+
+    async def click(self, selector: str):
+        await self.page.click(selector)
+        
+    async def fill(self, selector: str, value: str):
+        await self.page.fill(selector, value)

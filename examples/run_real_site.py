@@ -35,8 +35,9 @@ async def crawl_phase(url: str, depth: int):
     graph_manager.save("crawl_data/graph.json")
     
     print("Generating semantic vector embeddings for states...")
-    vector_store = VectorStore(dimension=384)
-    indexer = KnowledgeIndexer(vector_store)
+    vector_store = VectorStore(embedding_dim=384)
+    embedder = SemanticEmbedder()
+    indexer = KnowledgeIndexer(embedder, vector_store)
     
     states_list = list(graph_manager.states.values())
     if not states_list:
@@ -44,8 +45,9 @@ async def crawl_phase(url: str, depth: int):
         await browser.stop()
         return
         
-    indexer.index_states(states_list)
-    vector_store.save("crawl_data/faiss_index.bin", "crawl_data/metadata.json")
+    for state_node in states_list:
+        indexer.index_page(state_node.page_data, state_node.state_id)
+    vector_store.save("crawl_data/faiss_index")
     
     print("\n=== CRAWL PHASE COMPLETED SUCCESSFULLY! ===")
     print(f"Crawled {len(states_list)} unique states.")
@@ -56,7 +58,7 @@ async def run_phase(goal: str, start_url: str):
     print(f"\n=== STARTING RUNTIME EXECUTION ===")
     print(f"Goal: '{goal}'")
     
-    if not os.path.exists("crawl_data/graph.json") or not os.path.exists("crawl_data/faiss_index.bin"):
+    if not os.path.exists("crawl_data/graph.json") or not os.path.exists("crawl_data/faiss_index.index"):
         print("Error: Crawl data files not found in 'crawl_data/'. Please run crawl phase first.")
         return
 
@@ -66,8 +68,8 @@ async def run_phase(goal: str, start_url: str):
     graph_manager.load("crawl_data/graph.json")
     
     print("Loading vector database...")
-    vector_store = VectorStore(dimension=384)
-    vector_store.load("crawl_data/faiss_index.bin", "crawl_data/metadata.json")
+    vector_store = VectorStore(embedding_dim=384)
+    vector_store.load("crawl_data/faiss_index")
     
     # Identify the starting state ID by matching start_url with our known nodes
     start_state_id = None
@@ -85,7 +87,7 @@ async def run_phase(goal: str, start_url: str):
 
     # 2. Spin up Browser and Agent
     browser = BrowserManager()
-    await browser.start()
+    await browser.start(headless=False)
     
     agent = ExecutionAgent(
         vector_store=vector_store,
@@ -103,7 +105,18 @@ async def run_phase(goal: str, start_url: str):
     print(f"Path Planned: {result['execution_path']}")
     print(f"Final Execution Status: {result['status']}")
     
-    await browser.stop()
+    print("\nThe browser is now running in headful mode and will remain open.")
+    print("You can continue interacting with the page.")
+    print("Press Ctrl+C in the terminal (or use the Stop button in the GUI) to exit.")
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except asyncio.CancelledError:
+        pass
+    except KeyboardInterrupt:
+        pass
+    finally:
+        await browser.stop()
 
 def main():
     parser = argparse.ArgumentParser(description="End-to-End Live Web Automation Testing Tool")

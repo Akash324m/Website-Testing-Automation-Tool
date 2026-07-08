@@ -19,16 +19,38 @@ JS_EXTRACTION_SCRIPT = """
     }
 
     function getCssSelector(el) {
-        if (el.tagName.toLowerCase() == "html") return "html";
-        let str = el.tagName.toLowerCase();
-        str += (el.id != "") ? "#" + el.id : "";
-        if (el.className) {
-            let classes = el.className.trim().split(/\\s+/);
-            for (let i = 0; i < classes.length; i++) {
-                str += "." + classes[i];
+        if (!el || el.nodeType !== 1) return "";
+        let path = [];
+        while (el && el.nodeType === Node.ELEMENT_NODE) {
+            let selector = el.tagName.toLowerCase();
+            if (selector === "html") {
+                path.unshift(selector);
+                break;
             }
+            if (el.id) {
+                selector += '#' + el.id;
+                path.unshift(selector);
+                break;
+            } else {
+                let sib = el, nth = 1;
+                while (sib = sib.previousElementSibling) {
+                    if (sib.tagName.toLowerCase() == selector) nth++;
+                }
+                if (nth !== 1 || el.nextElementSibling) {
+                    // It's safer to always add nth-of-type if it has siblings of same type, 
+                    // or just always if no ID is present and we want exact paths.
+                    let siblingCount = 0;
+                    let s = el.parentNode.firstElementChild;
+                    while(s) { if(s.tagName === el.tagName) siblingCount++; s = s.nextElementSibling; }
+                    if (siblingCount > 1) {
+                        selector += `:nth-of-type(${nth})`;
+                    }
+                }
+            }
+            path.unshift(selector);
+            el = el.parentNode;
         }
-        return str;
+        return path.join(" > ");
     }
 
     const components = [];

@@ -67,6 +67,13 @@ def create_agent_graph(vector_store, embedder, graph_manager, browser_manager):
         page_manager = await browser_manager.new_page(context)
         
         try:
+            # First, navigate to the starting page
+            start_url = graph_manager.graph.nodes[state["current_state_id"]].get("url")
+            if start_url:
+                await page_manager.navigate(start_url)
+            else:
+                logger.warning(f"No URL found for starting state {state['current_state_id']}")
+            
             for step in state["execution_path"]:
                 logger.info(f"Executing step: {step['action_type']} on '{step['label']}'")
                 if step["action_type"] == "click":

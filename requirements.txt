@@ -14,3 +14,5 @@ numpy
 langgraph
 langchain
 langchain-core
+fastapi
+uvicorn

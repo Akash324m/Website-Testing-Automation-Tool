@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Automation Controller</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(22, 29, 49, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            overflow-x: hidden;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: fadeIn Down 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .panel-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .panel-title .icon {
+            font-size: 1.6rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+
+        .console-panel {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .console-panel {
+                grid-column: span 1;
+            }
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-screen {
+            background: #05070c;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #34d399;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .console-line {
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .console-line.error {
+            color: #f87171;
+        }
+
+        .console-line.info {
+            color: #60a5fa;
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        .status-dot.active {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.stopped {
+            background-color: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Web Automation Engine</h1>
+        <p class="subtitle">Autonomous Web Crawler & Execution Agent Platform</p>
+    </header>
+
+    <div class="container">
+        <!-- Panel 1: Offline Crawler -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="icon">🕸️</span>
+                <span>Stage 1: Offline Crawling & Indexing</span>
+            </div>
+            
+            <div class="input-group">
+                <label for="crawl-url">Target Website URL</label>
+                <input type="url" id="crawl-url" placeholder="https://quotes.toscrape.com" value="https://quotes.toscrape.com">
+            </div>
+
+            <div class="input-group">
+                <label for="crawl-depth">Max Depth</label>
+                <input type="number" id="crawl-depth" min="1" max="5" value="1">
+            </div>
+
+            <button class="btn btn-primary" id="btn-crawl" onclick="startCrawl()">
+                🚀 Crawl & Map Website
+            </button>
+        </div>
+
+        <!-- Panel 2: Execution Agent -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="icon">🤖</span>
+                <span>Stage 2: Goal Execution Agent</span>
+            </div>
+
+            <div class="input-group">
+                <label for="exec-goal">Goal Description</label>
+                <input type="text" id="exec-goal" placeholder="Go to the login page">
+            </div>
+
+            <div class="input-group">
+                <label for="exec-start-url">Starting URL</label>
+                <input type="url" id="exec-start-url" placeholder="https://quotes.toscrape.com" value="https://quotes.toscrape.com">
+            </div>
+
+            <button class="btn btn-primary" id="btn-run" onclick="startRun()">
+                ⚡ Execute Agent Path
+            </button>
+        </div>
+
+        <!-- Console / Logs Output -->
+        <div class="panel console-panel">
+            <div class="console-header">
+                <div class="panel-title">
+                    <span class="icon">💻</span>
+                    <span>Live Output & Execution Logs</span>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Idle</span>
+                </div>
+            </div>
+
+            <div class="console-screen" id="console-screen">
+                <div class="console-line info">Welcome to Web Automation Controller GUI. Enter details above and click Start!</div>
+            </div>
+
+            <button class="btn btn-danger" id="btn-stop" onclick="stopProcess()" disabled>
+                🛑 Terminate Active Task
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        const consoleScreen = document.getElementById('console-screen');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const btnStop = document.getElementById('btn-stop');
+        const btnCrawl = document.getElementById('btn-crawl');
+        const btnRun = document.getElementById('btn-run');
+
+        function appendLog(text, type = '') {
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = text;
+            consoleScreen.appendChild(line);
+            consoleScreen.scrollTop = consoleScreen.scrollHeight;
+        }
+
+        function setStatus(status, active = false) {
+            statusText.textContent = status;
+            statusDot.className = 'status-dot';
+            if (active) {
+                statusDot.classList.add('active');
+                btnStop.disabled = false;
+                btnCrawl.disabled = true;
+                btnRun.disabled = true;
+            } else {
+                if (status === 'Stopped' || status === 'Error') {
+                    statusDot.classList.add('stopped');
+                }
+                btnStop.disabled = true;
+                btnCrawl.disabled = false;
+                btnRun.disabled = false;
+            }
+        }
+
+        function startSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            eventSource = new EventSource('/api/logs');
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'log') {
+                    appendLog(data.text);
+                } else if (data.type === 'status') {
+                    if (data.text === 'done') {
+                        appendLog('--- Task Finished ---', 'info');
+                        setStatus('Idle', false);
+                        eventSource.close();
+                    } else if (data.text === 'error') {
+                        appendLog('--- Task Encountered Error ---', 'error');
+                        setStatus('Error', false);
+                        eventSource.close();
+                    }
+                }
+            };
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        }
+
+        async function startCrawl() {
+            const url = document.getElementById('crawl-url').value;
+            const depth = document.getElementById('crawl-depth').value;
+
+            if (!url) {
+                alert('Please enter a target URL!');
+                return;
+            }
+
+            consoleScreen.innerHTML = '';
+            appendLog(`Starting Offline Crawling for: ${url} (Depth: ${depth})...`, 'info');
+            setStatus('Crawling', true);
+            startSSE();
+
+            try {
+                const res = await fetch(`/api/crawl?url=${encodeURIComponent(url)}&depth=${depth}`);
+                const data = await res.json();
+                if (!res.ok) {
+                    appendLog(`Error: ${data.detail}`, 'error');
+                    setStatus('Error', false);
+                }
+            } catch (err) {
+                appendLog(`Connection failed: ${err}`, 'error');
+                setStatus('Error', false);
+            }
+        }
+
+        async function startRun() {
+            const goal = document.getElementById('exec-goal').value;
+            const startUrl = document.getElementById('exec-start-url').value;
+
+            if (!goal || !startUrl) {
+                alert('Please enter both the Goal and Starting URL!');
+                return;
+            }
+
+            consoleScreen.innerHTML = '';
+            appendLog(`Starting Agent to execute goal: "${goal}" starting from ${startUrl}...`, 'info');
+            setStatus('Executing', true);
+            startSSE();
+
+            try {
+                const res = await fetch(`/api/run?goal=${encodeURIComponent(goal)}&start_url=${encodeURIComponent(startUrl)}`);
+                const data = await res.json();
+                if (!res.ok) {
+                    appendLog(`Error: ${data.detail}`, 'error');
+                    setStatus('Error', false);
+                }
+            } catch (err) {
+                appendLog(`Connection failed: ${err}`, 'error');
+                setStatus('Error', false);
+            }
+        }
+
+        async function stopProcess() {
+            appendLog('Requesting process termination...', 'error');
+            try {
+                await fetch('/api/stop', { method: 'POST' });
+                setStatus('Stopped', false);
+                appendLog('Process terminated by user.', 'error');
+            } catch (err) {
+                appendLog(`Failed to stop process: ${err}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
